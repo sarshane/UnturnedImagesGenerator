@@ -1,0 +1,57 @@
+name: Unturned Images Module Release
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Module Version (SemVer: https://semver.org)'
+        required: true
+
+permissions:
+  contents: write
+
+jobs:
+  deploy:
+    name: "GitHub Release"
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout Repository
+      uses: actions/checkout@v4
+
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: 8.0.x
+
+    - name: Install zip
+      run: sudo apt-get update && sudo apt-get install -y zip
+
+    - name: Install dependencies
+      run: dotnet restore tools/UnturnedImages.Module/UnturnedImages.Module.csproj
+
+    - name: Update version
+      run: |
+        sed -i "s#<Version>0.0.0</Version>#<Version>${{ github.event.inputs.version }}</Version>#" tools/UnturnedImages.Module/UnturnedImages.Module.csproj
+        sed -i "s#\"Version\": \"0.0.0.0\"#\"Version\": \"${{ github.event.inputs.version }}\"#" tools/UnturnedImages.Module/UnturnedImages.module
+
+    - name: Build
+      run: dotnet build ./tools/UnturnedImages.Module/UnturnedImages.Module.csproj --configuration Release --no-restore
+
+    - name: Zip release
+      run: |
+        cd "./tools/UnturnedImages.Module/bin/Release/netstandard2.1"
+        mkdir UnturnedImages
+        mv *.dll UnturnedImages
+        mv *.module UnturnedImages
+        zip -qr ../../../../../Release.zip UnturnedImages/
+        cd ../../../../../
+      shell: bash
+
+    - name: Create release
+      uses: softprops/action-gh-release@v2
+      with:
+        tag_name: ${{ github.event.inputs.version }}
+        name: "UnturnedImages.Module v${{ github.event.inputs.version }}"
+        draft: true
+        prerelease: false
+        files: ./Release.zip
