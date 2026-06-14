@@ -175,7 +175,7 @@ namespace UnturnedImages.Module.Images
                             $"UnturnedImagesGenerator: vanilla icon timed out (item {_vanillaInFlight.Asset.id}), skipping.");
                         if (!_vanillaInFlight.PreviewOnly)
                         {
-                            ExportProgressTracker.CompleteOne($"Предмет {_vanillaInFlight.Asset.id}: таймаут иконки",
+                            ExportProgressTracker.CompleteOne($"Item {_vanillaInFlight.Asset.id}: icon timeout",
                                 false);
                         }
 
@@ -234,11 +234,11 @@ namespace UnturnedImages.Module.Images
             }
             catch (Exception ex)
             {
-                UnturnedLog.error($"UnturnedImagesGenerator: ItemTool.getIcon недоступен для предмета {job.Asset.id} " +
-                                  $"({ex.GetType().Name}). Переключитесь на режим «Предмет: 3D».");
+                UnturnedLog.error($"UnturnedImagesGenerator: ItemTool.getIcon unavailable for item {job.Asset.id} " +
+                                  $"({ex.GetType().Name}). Switch to the Item: 3D mode.");
                 if (!job.PreviewOnly)
                 {
-                    ExportProgressTracker.CompleteOne($"Предмет {job.Asset.id}: иконка недоступна", false);
+                    ExportProgressTracker.CompleteOne($"Item {job.Asset.id}: icon unavailable", false);
                 }
 
                 _vanillaInFlight = null;
@@ -271,7 +271,7 @@ namespace UnturnedImages.Module.Images
                 {
                     var path = $"{job.OutputPathBase}.png";
                     ReadWrite.writeBytes(path, false, false, readable.EncodeToPNG());
-                    ExportProgressTracker.CompleteOne($"Предмет {job.Asset.id}", true);
+                    ExportProgressTracker.CompleteOne($"Item {job.Asset.id}", true);
                 }
                 finally
                 {
@@ -283,7 +283,7 @@ namespace UnturnedImages.Module.Images
                 UnturnedLog.error("UnturnedImagesGenerator: vanilla icon export failed: " + ex.Message);
                 if (!job.PreviewOnly)
                 {
-                    ExportProgressTracker.CompleteOne($"Предмет {job.Asset.id}: ошибка", false);
+                    ExportProgressTracker.CompleteOne($"Item {job.Asset.id}: error", false);
                 }
             }
         }
@@ -303,10 +303,10 @@ namespace UnturnedImages.Module.Images
                     NoStatTracker);
                 if (model == null)
                 {
-                    UnturnedLog.error($"UnturnedImagesGenerator: ItemTool.getItem вернул null (предмет id={asset.id}).");
+                    UnturnedLog.error($"UnturnedImagesGenerator: ItemTool.getItem returned null (item id={asset.id}).");
                     if (!job.PreviewOnly)
                     {
-                        ExportProgressTracker.CompleteOne($"Предмет {asset.id}: модель не найдена", false);
+                        ExportProgressTracker.CompleteOne($"Item {asset.id}: model not found", false);
                     }
 
                     return;
@@ -341,7 +341,7 @@ namespace UnturnedImages.Module.Images
                 else
                 {
                     orthographicSize = 1f;
-                    UnturnedLog.warn($"UnturnedImagesGenerator: предмет {asset.id} без рендереров для кадрирования.");
+                    UnturnedLog.warn($"UnturnedImagesGenerator: item {asset.id} has no renderers to frame.");
                 }
 
                 texture = ItemTool.captureIcon(asset.id, job.SkinId, model, _camera, renderWidth, renderHeight,
@@ -359,15 +359,15 @@ namespace UnturnedImages.Module.Images
                 {
                     var path = $"{job.OutputPathBase}.png";
                     ReadWrite.writeBytes(path, false, false, processed.EncodeToPNG());
-                    ExportProgressTracker.CompleteOne($"Предмет {asset.id}", true);
+                    ExportProgressTracker.CompleteOne($"Item {asset.id}", true);
                 }
             }
             catch (Exception ex)
             {
-                UnturnedLog.error($"UnturnedImagesGenerator: рендер предмета {asset.id} упал: {ex}");
+                UnturnedLog.error($"UnturnedImagesGenerator: item {asset.id} render failed: {ex}");
                 if (!job.PreviewOnly)
                 {
-                    ExportProgressTracker.CompleteOne($"Предмет {asset.id}: ошибка", false);
+                    ExportProgressTracker.CompleteOne($"Item {asset.id}: error", false);
                 }
             }
             finally

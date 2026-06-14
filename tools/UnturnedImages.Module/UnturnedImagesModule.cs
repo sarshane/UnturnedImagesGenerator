@@ -19,7 +19,7 @@ namespace UnturnedImages.Module
 
         public void initialize()
         {
-            UnturnedLog.info("Loading UnturnedImages Module — F10: окно экспорта PNG.");
+            UnturnedLog.info("Loading UnturnedImages Module — F10: PNG export window.");
 
             Instance = this;
 

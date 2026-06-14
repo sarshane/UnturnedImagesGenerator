@@ -12,12 +12,12 @@ namespace UnturnedImages.Module.Commands
     /// </summary>
     public sealed class ExportImagesCommand : Command
     {
-        private const string Usage = "Использование: exportimages <items|vehicles|all|workshop> [workshopId]";
+        private const string Usage = "Usage: exportimages <items|vehicles|all|workshop> [workshopId]";
 
         public ExportImagesCommand()
         {
             _command = "exportimages";
-            _info = "Экспортирует иконки предметов/транспорта (UnturnedImagesGenerator).";
+            _info = "Exports item/vehicle icons (UnturnedImagesGenerator).";
             _help = Usage;
         }
 
@@ -41,31 +41,31 @@ namespace UnturnedImages.Module.Commands
                 {
                     case "items":
                         ImageUtils.CaptureAllItemImages(settings);
-                        CommandWindow.Log("UnturnedImagesGenerator: экспорт предметов поставлен в очередь.");
+                        CommandWindow.Log("UnturnedImagesGenerator: item export queued.");
                         break;
 
                     case "vehicles":
                         ImageUtils.CaptureAllVehicleImages(settings);
-                        CommandWindow.Log("UnturnedImagesGenerator: экспорт транспорта поставлен в очередь.");
+                        CommandWindow.Log("UnturnedImagesGenerator: vehicle export queued.");
                         break;
 
                     case "all":
                         ImageUtils.CaptureAllItemImages(settings);
                         ImageUtils.CaptureAllVehicleImages(settings);
-                        CommandWindow.Log("UnturnedImagesGenerator: экспорт предметов и транспорта поставлен в очередь.");
+                        CommandWindow.Log("UnturnedImagesGenerator: item and vehicle export queued.");
                         break;
 
                     case "workshop":
                         if (args.Length < 2 || !uint.TryParse(args[1], out var modId) || modId == 0)
                         {
-                            CommandWindow.LogError("Укажите корректный Workshop ID: exportimages workshop <id>");
+                            CommandWindow.LogError("Specify a valid Workshop ID: exportimages workshop <id>");
                             return;
                         }
 
                         settings.WorkshopModIdFilter = modId;
                         ImageUtils.CaptureItemsForWorkshopMod(modId, settings);
                         ImageUtils.CaptureVehiclesForWorkshopMod(modId, settings);
-                        CommandWindow.Log($"UnturnedImagesGenerator: экспорт workshop-мода {modId} поставлен в очередь.");
+                        CommandWindow.Log($"UnturnedImagesGenerator: workshop mod {modId} export queued.");
                         break;
 
                     default:
@@ -75,7 +75,7 @@ namespace UnturnedImages.Module.Commands
             }
             catch (Exception ex)
             {
-                CommandWindow.LogError("UnturnedImagesGenerator: ошибка команды: " + ex.Message);
+                CommandWindow.LogError("UnturnedImagesGenerator: command error: " + ex.Message);
             }
         }
     }

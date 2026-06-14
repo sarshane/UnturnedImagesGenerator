@@ -32,24 +32,24 @@ namespace UnturnedImages.Module.UI
 
         private static readonly ColorPreset[] LightColorPresets =
         {
-            new("Белый", Color.white),
-            new("Тёплый", new Color(1f, 0.82f, 0.55f, 1f)),
-            new("Холодный", new Color(0.65f, 0.82f, 1f, 1f)),
-            new("Жёлтый", new Color(1f, 0.9f, 0.25f, 1f)),
-            new("Красный", new Color(1f, 0.35f, 0.3f, 1f)),
-            new("Зелёный", new Color(0.35f, 1f, 0.45f, 1f)),
-            new("Синий", new Color(0.35f, 0.55f, 1f, 1f)),
-            new("Фиолет", new Color(0.8f, 0.45f, 1f, 1f))
+            new("White", Color.white),
+            new("Warm", new Color(1f, 0.82f, 0.55f, 1f)),
+            new("Cool", new Color(0.65f, 0.82f, 1f, 1f)),
+            new("Yellow", new Color(1f, 0.9f, 0.25f, 1f)),
+            new("Red", new Color(1f, 0.35f, 0.3f, 1f)),
+            new("Green", new Color(0.35f, 1f, 0.45f, 1f)),
+            new("Blue", new Color(0.35f, 0.55f, 1f, 1f)),
+            new("Purple", new Color(0.8f, 0.45f, 1f, 1f))
         };
 
         private static readonly ColorPreset[] BackgroundPresets =
         {
-            new("Тёмный", new Color(0.12f, 0.12f, 0.14f, 1f)),
-            new("Серый", new Color(0.5f, 0.5f, 0.5f, 1f)),
-            new("Белый", Color.white),
-            new("Чёрный", Color.black),
-            new("Синий", new Color(0.15f, 0.2f, 0.35f, 1f)),
-            new("Хромакей", new Color(0.1f, 0.7f, 0.2f, 1f))
+            new("Dark", new Color(0.12f, 0.12f, 0.14f, 1f)),
+            new("Gray", new Color(0.5f, 0.5f, 0.5f, 1f)),
+            new("White", Color.white),
+            new("Black", Color.black),
+            new("Blue", new Color(0.15f, 0.2f, 0.35f, 1f)),
+            new("Chroma", new Color(0.1f, 0.7f, 0.2f, 1f))
         };
 
         public static void Load()
@@ -189,10 +189,10 @@ namespace UnturnedImages.Module.UI
             parent.AddChild(root);
 
             AddLabel(root, "Unturned Images Generator", c1, 12f, 470f, 28f, ESleekFontSize.Medium);
-            AddButton(root, "Закрыть (F10)", 790f, 12f, 108f, 28f, _ => Close());
+            AddButton(root, "Close (F10)", 790f, 12f, 108f, 28f, _ => Close());
 
             // ---- Column 1: preview ----
-            AddLabel(root, "Превью", c1, 50f, 250f, 24f, ESleekFontSize.Medium);
+            AddLabel(root, "Preview", c1, 50f, 250f, 24f, ESleekFontSize.Medium);
             var imageFrame = glazier.CreateBox();
             SetTransform(imageFrame, c1, 80f, 250f, 250f);
             imageFrame.BackgroundColor = ESleekTint.FOREGROUND;
@@ -203,44 +203,44 @@ namespace UnturnedImages.Module.UI
             imageFrame.AddChild(_previewImage);
 
             _previewInfoLabel = AddLabel(root, "ID: 0", c1, 336f, 250f, 24f);
-            AddNumeric(root, "ID для превью", c1, 366f, _previewAssetId, value =>
+            AddNumeric(root, "Preview ID", c1, 366f, _previewAssetId, value =>
             {
                 _previewAssetId = value;
                 _itemPreviewDirty = true;
                 RefreshPreview(force: true);
             });
-            AddButton(root, _previewVehicle ? "Режим: транспорт" : "Режим: предмет", c1, 402f, 250f, 32f, _ =>
+            AddButton(root, _previewVehicle ? "Mode: vehicle" : "Mode: item", c1, 402f, 250f, 32f, _ =>
             {
                 _previewVehicle = !_previewVehicle;
                 _itemPreviewDirty = true;
                 Rebuild();
             });
-            AddButton(root, "Снять PNG-превью", c1, 438f, 250f, 32f, _ => QueuePreviewPng());
+            AddButton(root, "Render PNG preview", c1, 438f, 250f, 32f, _ => QueuePreviewPng());
 
             // ---- Column 2: pose, camera, light ----
-            AddLabel(root, "Поза и камера", c2, 50f, 300f, 24f, ESleekFontSize.Medium);
-            AddAngleSlider(root, "Поворот X", c2, 80f, CurrentAngles.x, value =>
+            AddLabel(root, "Pose & camera", c2, 50f, 300f, 24f, ESleekFontSize.Medium);
+            AddAngleSlider(root, "Rotation X", c2, 80f, CurrentAngles.x, value =>
             {
                 SetAngle(0, value);
                 RefreshPreview(force: true);
             });
-            AddAngleSlider(root, "Поворот Y", c2, 116f, CurrentAngles.y, value =>
+            AddAngleSlider(root, "Rotation Y", c2, 116f, CurrentAngles.y, value =>
             {
                 SetAngle(1, value);
                 RefreshPreview(force: true);
             });
-            AddAngleSlider(root, "Поворот Z", c2, 152f, CurrentAngles.z, value =>
+            AddAngleSlider(root, "Rotation Z", c2, 152f, CurrentAngles.z, value =>
             {
                 SetAngle(2, value);
                 RefreshPreview(force: true);
             });
-            AddRangeSlider(root, "Зум", c2, 188f, _settings.CameraZoom, 0.5f, 2.5f, value =>
+            AddRangeSlider(root, "Zoom", c2, 188f, _settings.CameraZoom, 0.5f, 2.5f, value =>
             {
                 _settings.CameraZoom = value;
                 RefreshPreview(force: true);
             });
 
-            AddLabel(root, "Свет", c2, 226f, 300f, 24f, ESleekFontSize.Medium);
+            AddLabel(root, "Light", c2, 226f, 300f, 24f, ESleekFontSize.Medium);
             AddRangeSlider(root, "Key X", c2, 256f, _settings.KeyLightX, -5f, 5f, value =>
             {
                 _settings.KeyLightX = value;
@@ -289,7 +289,7 @@ namespace UnturnedImages.Module.UI
                 _itemPreviewDirty = true;
                 Rebuild();
             });
-            AddButton(root, ToggleText("Directional-свет", _settings.UseDirectionalLight), c2, 508f, 300f, 30f, _ =>
+            AddButton(root, ToggleText("Directional light", _settings.UseDirectionalLight), c2, 508f, 300f, 30f, _ =>
             {
                 _settings.UseDirectionalLight = !_settings.UseDirectionalLight;
                 _itemPreviewDirty = true;
@@ -297,13 +297,13 @@ namespace UnturnedImages.Module.UI
             });
 
             // ---- Column 3: image + export ----
-            AddLabel(root, "Изображение", c3, 50f, 300f, 24f, ESleekFontSize.Medium);
-            AddNumeric(root, "Размер PNG", c3, 80f, (ushort)Mathf.Clamp(_settings.ImageSize, 64, 4096), value =>
+            AddLabel(root, "Image", c3, 50f, 300f, 24f, ESleekFontSize.Medium);
+            AddNumeric(root, "PNG size", c3, 80f, (ushort)Mathf.Clamp(_settings.ImageSize, 64, 4096), value =>
             {
                 _settings.ImageSize = value;
                 _settings.NormalizeConstraints();
             });
-            AddButton(root, $"Сглаживание: {_settings.SupersamplingScale}x", c3, 116f, 300f, 30f, _ =>
+            AddButton(root, $"Supersampling: {_settings.SupersamplingScale}x", c3, 116f, 300f, 30f, _ =>
             {
                 _settings.SupersamplingScale = _settings.SupersamplingScale >= 4 ? 1 : _settings.SupersamplingScale * 2;
                 Rebuild();
@@ -322,24 +322,24 @@ namespace UnturnedImages.Module.UI
                     : ItemIconExportMode.Rendered3D;
                 Rebuild();
             });
-            AddButton(root, ToggleText("Тень", _settings.UseShadowCatcher), c3, 188f, half, 30f, _ =>
+            AddButton(root, ToggleText("Shadow", _settings.UseShadowCatcher), c3, 188f, half, 30f, _ =>
             {
                 _settings.UseShadowCatcher = !_settings.UseShadowCatcher;
                 _itemPreviewDirty = true;
                 Rebuild();
             });
-            AddButton(root, ToggleText("Обрезка", _settings.TrimTransparentPadding), c3 + gap, 188f, half, 30f, _ =>
+            AddButton(root, ToggleText("Trim", _settings.TrimTransparentPadding), c3 + gap, 188f, half, 30f, _ =>
             {
                 _settings.TrimTransparentPadding = !_settings.TrimTransparentPadding;
                 _itemPreviewDirty = true;
                 Rebuild();
             });
-            AddRangeSlider(root, "Отступ", c3, 224f, _settings.TrimPaddingFraction, 0f, 0.45f, value =>
+            AddRangeSlider(root, "Padding", c3, 224f, _settings.TrimPaddingFraction, 0f, 0.45f, value =>
             {
                 _settings.TrimPaddingFraction = value;
                 RefreshPreview(force: true);
             });
-            AddButton(root, ToggleText("Фон", _settings.UseSolidBackground), c3, 260f, half, 30f, _ =>
+            AddButton(root, ToggleText("Background", _settings.UseSolidBackground), c3, 260f, half, 30f, _ =>
             {
                 _settings.UseSolidBackground = !_settings.UseSolidBackground;
                 _itemPreviewDirty = true;
@@ -352,8 +352,8 @@ namespace UnturnedImages.Module.UI
                 Rebuild();
             });
 
-            AddLabel(root, "Экспорт", c3, 298f, 300f, 24f, ESleekFontSize.Medium);
-            AddButton(root, ToggleText("Официальные", _settings.ExportOfficialAssets), c3, 328f, half, 30f, _ =>
+            AddLabel(root, "Export", c3, 298f, 300f, 24f, ESleekFontSize.Medium);
+            AddButton(root, ToggleText("Official", _settings.ExportOfficialAssets), c3, 328f, half, 30f, _ =>
             {
                 _settings.ExportOfficialAssets = !_settings.ExportOfficialAssets;
                 Rebuild();
@@ -368,32 +368,32 @@ namespace UnturnedImages.Module.UI
                 _workshopFilter = value;
                 _settings.WorkshopModIdFilter = value;
             });
-            AddButton(root, "Экспорт: Предметы", c3, 400f, half, 34f, _ =>
+            AddButton(root, "Export: Items", c3, 400f, half, 34f, _ =>
             {
                 ApplyAndSave();
                 ImageUtils.CaptureAllItemImages(_settings);
             });
-            AddButton(root, "Экспорт: Транспорт", c3 + gap, 400f, half, 34f, _ =>
+            AddButton(root, "Export: Vehicles", c3 + gap, 400f, half, 34f, _ =>
             {
                 ApplyAndSave();
                 ImageUtils.CaptureAllVehicleImages(_settings);
             });
-            AddButton(root, "Экспорт workshop-мода", c3, 438f, 300f, 34f, _ =>
+            AddButton(root, "Export workshop mod", c3, 438f, 300f, 34f, _ =>
             {
                 ApplyAndSave();
                 if (_workshopFilter == 0)
                 {
-                    UnturnedLog.error("UnturnedImagesGenerator: Workshop ID должен быть не 0.");
+                    UnturnedLog.error("UnturnedImagesGenerator: Workshop ID must not be 0.");
                     return;
                 }
 
                 ImageUtils.CaptureItemsForWorkshopMod(_workshopFilter, _settings);
                 ImageUtils.CaptureVehiclesForWorkshopMod(_workshopFilter, _settings);
             });
-            AddButton(root, "Отмена экспорта", c3, 476f, 300f, 30f, _ => CancelExport());
+            AddButton(root, "Cancel export", c3, 476f, 300f, 30f, _ => CancelExport());
 
             // ---- Footer: progress + hint ----
-            AddLabel(root, "Папка вывода задаётся в settings.json", c1, 508f, 250f, 22f);
+            AddLabel(root, "Output folder is set in settings.json", c1, 508f, 250f, 22f);
 
             var progressBack = glazier.CreateBox();
             SetTransform(progressBack, c2, 548f, ProgressWidth, 16f);
@@ -488,15 +488,15 @@ namespace UnturnedImages.Module.UI
                 {
                     var vehicle = Assets.find(EAssetType.VEHICLE, _previewAssetId) as VehicleAsset;
                     _previewInfoLabel.Text = vehicle == null
-                        ? $"Транспорт {_previewAssetId} не найден"
-                        : $"Транспорт {_previewAssetId} | поворот {FormatAngles(_settings.VehicleEulerDegrees)}";
+                        ? $"Vehicle {_previewAssetId} not found"
+                        : $"Vehicle {_previewAssetId} | rotation {FormatAngles(_settings.VehicleEulerDegrees)}";
                 }
                 else
                 {
                     var item = Assets.find(EAssetType.ITEM, _previewAssetId) as ItemAsset;
                     _previewInfoLabel.Text = item == null
-                        ? $"Предмет {_previewAssetId} не найден"
-                        : $"Предмет {_previewAssetId} | поворот {FormatAngles(_settings.ItemExtraEulerDegrees)}";
+                        ? $"Item {_previewAssetId} not found"
+                        : $"Item {_previewAssetId} | rotation {FormatAngles(_settings.ItemExtraEulerDegrees)}";
                 }
             }
 
@@ -608,7 +608,7 @@ namespace UnturnedImages.Module.UI
         {
             CustomItemTool.ClearQueues();
             CustomVehicleTool.ClearQueues();
-            ExportProgressTracker.Reset("Отменено");
+            ExportProgressTracker.Reset("Cancelled");
             RefreshProgress();
         }
 
@@ -650,7 +650,7 @@ namespace UnturnedImages.Module.UI
 
         private string GetBackgroundColorText()
         {
-            return $"Фон: {GetBackgroundName(GetBackgroundColor())}";
+            return $"Bg: {GetBackgroundName(GetBackgroundColor())}";
         }
 
         private static string GetBackgroundName(Color color)
@@ -827,19 +827,19 @@ namespace UnturnedImages.Module.UI
 
         private static string GetNamingText()
         {
-            return _instance?._settings.NamingMode == ExportNamingMode.GuidString ? "Имя: GUID" : "Имя: ID";
+            return _instance?._settings.NamingMode == ExportNamingMode.GuidString ? "Name: GUID" : "Name: ID";
         }
 
         private static string GetItemModeText()
         {
             return _instance?._settings.ItemIconMode == ItemIconExportMode.VanillaUiIcon
-                ? "Предмет: иконка"
-                : "Предмет: 3D";
+                ? "Item: icon"
+                : "Item: 3D";
         }
 
         private static string ToggleText(string name, bool value)
         {
-            return value ? $"{name}: да" : $"{name}: нет";
+            return value ? $"{name}: on" : $"{name}: off";
         }
 
         private readonly struct ColorPreset

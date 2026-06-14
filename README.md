@@ -41,7 +41,9 @@ exported.
    …/steamapps/common/Unturned/Modules/UnturnedImages/UnturnedImages.Module.dll
    …/steamapps/common/Unturned/Modules/UnturnedImages/  (+ the other .dll files)
    ```
-3. Launch Unturned. Press **F10** in the main menu or in-game to open the generator.
+3. Launch Unturned **without BattlEye** — in the Steam launch dialog pick the *Play without BattlEye*
+   option (BattlEye blocks third-party modules from loading).
+4. Press **F10** in the main menu or in-game to open the generator.
 
 > It is a **client** module (it renders on your machine), not a server plugin.
 

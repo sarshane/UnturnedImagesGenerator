@@ -109,7 +109,7 @@ namespace UnturnedImages.Module.Images
             var basePath = Path.Combine(root, categoryFolder);
             var filteredAssets = assets.Where(asset => PassesFilters(asset, settings)).ToList();
 
-            ExportProgressTracker.AddQueued($"Экспорт {categoryFolder}", filteredAssets.Count);
+            ExportProgressTracker.AddQueued($"Export {categoryFolder}", filteredAssets.Count);
 
             var modAssets = new Dictionary<uint, List<ushort>>();
 

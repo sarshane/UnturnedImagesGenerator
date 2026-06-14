@@ -7,8 +7,8 @@ namespace UnturnedImages.Module.Images
         private static int _queued;
         private static int _completed;
         private static int _failed;
-        private static string _label = "Ожидание";
-        private static string _lastMessage = "Готово";
+        private static string _label = "Idle";
+        private static string _lastMessage = "Done";
 
         public static int Queued => _queued;
 
@@ -23,22 +23,22 @@ namespace UnturnedImages.Module.Images
         public static string StatusText =>
             _queued <= 0
                 ? _lastMessage
-                : $"{_label}: {_completed}/{_queued} ({Progress:P0}), ошибок: {_failed}. {_lastMessage}";
+                : $"{_label}: {_completed}/{_queued} ({Progress:P0}), errors: {_failed}. {_lastMessage}";
 
-        public static void Reset(string label = "Ожидание")
+        public static void Reset(string label = "Idle")
         {
             _queued = 0;
             _completed = 0;
             _failed = 0;
             _label = label;
-            _lastMessage = "Готово";
+            _lastMessage = "Done";
         }
 
         public static void AddQueued(string label, int count)
         {
             if (count <= 0)
             {
-                _lastMessage = "Нечего экспортировать по текущим фильтрам";
+                _lastMessage = "Nothing to export for the current filters";
                 return;
             }
 
@@ -51,7 +51,7 @@ namespace UnturnedImages.Module.Images
 
             _queued += count;
             _label = label;
-            _lastMessage = "Добавлено в очередь";
+            _lastMessage = "Queued";
         }
 
         public static void CompleteOne(string message, bool success)
@@ -71,7 +71,7 @@ namespace UnturnedImages.Module.Images
 
             if (_completed >= _queued)
             {
-                _lastMessage = _failed == 0 ? "Экспорт завершен" : "Экспорт завершен с ошибками";
+                _lastMessage = _failed == 0 ? "Export finished" : "Export finished with errors";
             }
         }
     }

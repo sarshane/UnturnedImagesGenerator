@@ -139,7 +139,7 @@ namespace UnturnedImages.Module.Images
                 UnturnedLog.error($"UnturnedImagesGenerator: could not load vehicle model for id={vehicleAsset.id}");
                 if (!vehicleIconInfo.PreviewOnly)
                 {
-                    ExportProgressTracker.CompleteOne($"Транспорт {vehicleAsset.id}: модель не найдена", false);
+                    ExportProgressTracker.CompleteOne($"Vehicle {vehicleAsset.id}: model not found", false);
                 }
                 return;
             }
@@ -245,14 +245,14 @@ namespace UnturnedImages.Module.Images
                 {
                     var path = $"{vehicleIconInfo.OutputPath}.png";
                     ReadWrite.writeBytes(path, false, false, processed.EncodeToPNG());
-                    ExportProgressTracker.CompleteOne($"Транспорт {vehicleAsset.id}", true);
+                    ExportProgressTracker.CompleteOne($"Vehicle {vehicleAsset.id}", true);
                 }
             }
             catch (Exception ex)
             {
                 if (!vehicleIconInfo.PreviewOnly)
                 {
-                    ExportProgressTracker.CompleteOne($"Транспорт {vehicleAsset.id}: ошибка", false);
+                    ExportProgressTracker.CompleteOne($"Vehicle {vehicleAsset.id}: error", false);
                 }
 
                 UnturnedLog.error($"UnturnedImagesGenerator: vehicle export failed ({vehicleAsset.id}): {ex.Message}");
