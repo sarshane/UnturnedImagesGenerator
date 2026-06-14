@@ -5,7 +5,8 @@ An in-game **Unturned client module** that renders clean, transparent icons of *
 **F10**) where you pose the model, tune lighting and post-processing, and see exactly what will be
 exported.
 
-> The in-game menu is in Russian; this guide maps every control to what it does.
+> 🍴 A fork of **[SilksPlugins/UnturnedImages](https://github.com/SilksPlugins/UnturnedImages)** —
+> reworked from the CDN / URL-resolver plugin into a standalone in-game icon generator.
 
 ---
 
@@ -153,6 +154,7 @@ Then copy the non-game DLLs + `UnturnedImages.module` from
 
 ## Credits
 
-- Original Unturned Images project and CDN concept: [SilK](https://github.com/SilKsPlugins/UnturnedImages).
+- Forked from the original Unturned Images project by
+  [SilK / SilksPlugins](https://github.com/SilksPlugins/UnturnedImages).
 - Bootstrapper / hotloader: [OpenMod](https://github.com/openmod/OpenMod).
 - In-game UI toolkit: [DanielWillett/UnturnedUITools](https://github.com/DanielWillett/UnturnedUITools).
