@@ -52,57 +52,57 @@ exported.
 ## Quick start
 
 1. Press **F10** to open **Unturned Images Generator**.
-2. In **Превью** (Preview), type an asset ID into **ID для превью** and use
-   **Режим: транспорт / предмет** to switch between vehicle and item preview.
+2. In **Preview**, type an asset ID into **Preview ID** and use **Mode: vehicle / Mode: item** to
+   switch between vehicle and item preview.
 3. Tune the pose/lighting in the middle and right columns — the preview updates live.
-4. Click an export button (right column): **Экспорт: Предметы**, **Экспорт: Транспорт**, or
-   **Экспорт workshop-мода**.
+4. Click an export button (right column): **Export: Items**, **Export: Vehicles**, or
+   **Export workshop mod**.
 5. Find your PNGs under `Unturned/Extras/UnturnedImagesGenerator/…` (see below).
 
 ---
 
 ## Menu reference
 
-**Превью (Preview)**
+**Preview**
 | Control | Meaning |
 |---|---|
-| `ID для превью` | Asset ID shown in the preview. |
-| `Режим: транспорт / предмет` | Toggle vehicle ↔ item preview/export target. |
-| `Снять PNG-превью` | Render a full-size preview into the preview box. |
+| `Preview ID` | Asset ID shown in the preview. |
+| `Mode: vehicle / Mode: item` | Toggle vehicle ↔ item preview/export target. |
+| `Render PNG preview` | Render a full-size preview into the preview box. |
 
-**Поза и камера (Pose & camera)**
+**Pose & camera**
 | Control | Meaning |
 |---|---|
-| `Поворот X / Y / Z` | Rotation of the model (works for vehicles **and** items). |
-| `Зум` | Camera zoom (0.5×–2.5×). |
+| `Rotation X / Y / Z` | Rotation of the model (works for vehicles **and** items). |
+| `Zoom` | Camera zoom (0.5×–2.5×). |
 
-**Свет (Light)**
+**Light**
 | Control | Meaning |
 |---|---|
 | `Key X / Y / Z` | Key (main) light position. |
 | `Rim X / Y / Z` | Rim (back) light position. |
 | `Key: … / Rim: …` | Cycle the key/rim light color. |
-| `Directional-свет` | Use a size-independent directional key light. |
+| `Directional light` | Use a size-independent directional key light. |
 
-**Изображение (Image)**
+**Image**
 | Control | Meaning |
 |---|---|
-| `Размер PNG` | Output resolution (64–4096). |
-| `Сглаживание: N×` | Supersampling (1/2/4×) — renders bigger then downscales. |
-| `Имя: ID / GUID` | File name = asset ID or GUID. |
-| `Предмет: 3D / иконка` | Item export mode: custom 3D render or exact vanilla UI icon. |
-| `Тень` | Soft shadow catcher under the model. |
-| `Обрезка` + `Отступ` | Auto-crop transparent margins to a fixed padding. |
-| `Фон` + `Фон: …` | Fill the background with a solid color (incl. chroma-key green). |
+| `PNG size` | Output resolution (64–4096). |
+| `Supersampling: N×` | Supersampling (1/2/4×) — renders bigger then downscales. |
+| `Name: ID / Name: GUID` | File name = asset ID or GUID. |
+| `Item: 3D / Item: icon` | Item export mode: custom 3D render or exact vanilla UI icon. |
+| `Shadow` | Soft shadow catcher under the model. |
+| `Trim` + `Padding` | Auto-crop transparent margins to a fixed padding. |
+| `Background` + `Bg: …` | Fill the background with a solid color (incl. chroma-key green). |
 
-**Экспорт (Export)**
+**Export**
 | Control | Meaning |
 |---|---|
-| `Официальные` / `Workshop` | Include official / workshop assets. |
+| `Official` / `Workshop` | Include official / workshop assets. |
 | `Workshop ID` | Filter to a single workshop mod (used by the workshop export button). |
-| `Экспорт: Предметы / Транспорт` | Export all items / all vehicles (per filters). |
-| `Экспорт workshop-мода` | Export items + vehicles of the `Workshop ID` mod. |
-| `Отмена экспорта` | Cancel the running export. |
+| `Export: Items / Export: Vehicles` | Export all items / all vehicles (per filters). |
+| `Export workshop mod` | Export items + vehicles of the `Workshop ID` mod. |
+| `Cancel export` | Cancel the running export. |
 
 ---
 
