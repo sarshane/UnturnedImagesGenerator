@@ -12,7 +12,7 @@ namespace UnturnedImages.Module.Images
 {
     public static class ImageUtils
     {
-        private static string GenerateIdRanges(List<ushort> ids)
+        internal static string GenerateIdRanges(List<ushort> ids)
         {
             ids.Sort();
 
@@ -142,29 +142,13 @@ namespace UnturnedImages.Module.Images
                 return;
             }
 
+            // One paste-ready YAML per mod (root/_Overrides/<modId>.yaml) accumulating item and
+            // vehicle ID ranges across both export passes.
+            var isVehicle = yamlAssetCategoryKey == "vehicles";
             foreach (var pair in modAssets)
             {
-                var modId = pair.Key;
-                var assetIds = pair.Value;
-
-                var idRanges = GenerateIdRanges(assetIds);
-
-                var directory = Path.Combine(basePath, ImageExportPaths.WorkshopSegment, modId.ToString());
-                var yamlPath = Path.Combine(directory, "UnturnedImages.override.yaml");
-
-                Directory.CreateDirectory(directory);
-
-                var fileToken = settings.NamingMode == ExportNamingMode.GuidString ? "{Guid}" : "{ItemId}";
-                var repoTemplate =
-                    $"https://your.cdn.example/{modId}/{yamlAssetCategoryKey}/{fileToken}.png";
-
-                File.WriteAllText(yamlPath,
-                    "# Paste fragments into UnturnedImages overrides / config as needed." + Environment.NewLine +
-                    "# Replace the Repository URL with your host." + Environment.NewLine +
-                    "- Id: \"" + idRanges + "\"" + Environment.NewLine +
-                    "  Repository: \"" + repoTemplate + "\"" + Environment.NewLine);
-
-                UnturnedLog.info($"UnturnedImagesGenerator: wrote hint {yamlPath}");
+                OverrideHintWriter.SetCategory(pair.Key, isVehicle, pair.Value);
+                OverrideHintWriter.Write(pair.Key, root, settings.NamingMode);
             }
         }
 

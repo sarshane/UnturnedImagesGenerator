@@ -29,7 +29,7 @@ exported.
 - Filters for official vs workshop assets, plus one-click export of a single workshop mod.
 - **Cancel** button to stop a running export.
 - Headless **console command** for scripted/batch export without the menu.
-- Writes `UnturnedImages.override.yaml` hint files for workshop mods.
+- Writes a paste-ready **`_Overrides/<modId>.yaml`** per workshop mod with the exported ID ranges.
 
 ---
 
@@ -118,6 +118,25 @@ Settings persist in `Unturned/Extras/UnturnedImagesGenerator/settings.json`. A f
 only available there:
 - `OutputDirectoryOverride` — export somewhere other than the default path (empty = default).
 - `ItemSkinId`, exact light intensities/colors, background RGB, etc.
+
+### Workshop override hints
+
+When you export a workshop mod, the generator writes **`_Overrides/<modId>.yaml`** at the output
+root, collapsing the exported asset IDs into compact ranges (e.g. `1000-1050;1100`). It is
+valid YAML you can drop straight into a consuming plugin's config:
+
+```yaml
+# UnturnedImagesGenerator — ID ranges for workshop mod 2376480123
+ItemOverrides:
+  - Id: "30000-30042;30100"
+    Repository: "<YOUR_CDN_BASE>/Items/Workshop/2376480123/{ItemId}.png"
+VehicleOverrides:
+  - Id: "31000-31008"
+    Repository: "<YOUR_CDN_BASE>/Vehicles/Workshop/2376480123/{VehicleId}.png"
+```
+
+Replace `<YOUR_CDN_BASE>` with where you host the exported folder, then paste each section into
+the matching list in your plugin.
 
 ---
 
