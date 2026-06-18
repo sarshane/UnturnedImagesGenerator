@@ -29,7 +29,7 @@ exported.
 - Filters for official vs workshop assets, plus one-click export of a single workshop mod.
 - **Cancel** button to stop a running export.
 - Headless **console command** for scripted/batch export without the menu.
-- Writes a paste-ready **`_Overrides/<modId>.yaml`** per workshop mod with the exported ID ranges.
+- Maintains one paste-ready **`_Overrides/overrides.yaml`** with the exported ID ranges of every mod.
 
 ---
 
@@ -121,22 +121,25 @@ only available there:
 
 ### Workshop override hints
 
-When you export a workshop mod, the generator writes **`_Overrides/<modId>.yaml`** at the output
-root, collapsing the exported asset IDs into compact ranges (e.g. `1000-1050;1100`). It is
-valid YAML you can drop straight into a consuming plugin's config:
+Every workshop export updates a single **`_Overrides/overrides.yaml`** at the output root,
+collapsing the exported asset IDs into compact ranges (e.g. `1000-1050;1100`). It **accumulates** —
+items, vehicles and additional mods exported in separate passes or sessions keep adding to the same
+file (the state is kept in a `.overrides.json` sidecar), so nothing is overwritten:
 
 ```yaml
-# UnturnedImagesGenerator — ID ranges for workshop mod 2376480123
+# UnturnedImagesGenerator — exported workshop ID ranges (all mods).
 ItemOverrides:
+  # mod 2376480123
   - Id: "30000-30042;30100"
     Repository: "<YOUR_CDN_BASE>/Items/Workshop/2376480123/{ItemId}.png"
 VehicleOverrides:
+  # mod 2376480123
   - Id: "31000-31008"
     Repository: "<YOUR_CDN_BASE>/Vehicles/Workshop/2376480123/{VehicleId}.png"
 ```
 
-Replace `<YOUR_CDN_BASE>` with where you host the exported folder, then paste each section into
-the matching list in your plugin.
+Replace `<YOUR_CDN_BASE>` with where you host the exported folder, then paste each section into the
+matching list in your plugin. To start the file fresh, delete the `_Overrides` folder.
 
 ---
 

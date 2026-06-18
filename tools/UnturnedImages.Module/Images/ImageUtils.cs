@@ -142,14 +142,15 @@ namespace UnturnedImages.Module.Images
                 return;
             }
 
-            // One paste-ready YAML per mod (root/_Overrides/<modId>.yaml) accumulating item and
-            // vehicle ID ranges across both export passes.
+            // Accumulate into a single, persistent root/_Overrides/overrides.yaml so items, vehicles
+            // and multiple mods keep adding up across export passes/sessions instead of overwriting.
             var isVehicle = yamlAssetCategoryKey == "vehicles";
             foreach (var pair in modAssets)
             {
-                OverrideHintWriter.SetCategory(pair.Key, isVehicle, pair.Value);
-                OverrideHintWriter.Write(pair.Key, root, settings.NamingMode);
+                OverrideHintWriter.Record(root, pair.Key, isVehicle, pair.Value, settings.NamingMode);
             }
+
+            OverrideHintWriter.Flush(root);
         }
 
         public static void CaptureAllItemImages(ExportSettings settings)

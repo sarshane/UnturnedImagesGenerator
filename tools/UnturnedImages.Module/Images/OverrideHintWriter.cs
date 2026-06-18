@@ -1,35 +1,41 @@
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Text;
+using Newtonsoft.Json;
 using SDG.Unturned;
 using UnturnedImages.Module.Config;
 
 namespace UnturnedImages.Module.Images
 {
     /// <summary>
-    /// Collects the asset IDs exported per workshop mod and writes one paste-ready YAML file per mod
-    /// (<c>&lt;root&gt;/_Overrides/&lt;modId&gt;.yaml</c>) listing the ID ranges as
-    /// <c>ItemOverrides</c> / <c>VehicleOverrides</c>, so they can be dropped straight into the
-    /// UnturnedImages plugin config. Item and vehicle exports are separate passes, so the data is
-    /// accumulated here and the file is rewritten with everything known so far after each pass.
+    /// Collects exported workshop asset IDs into a single, persistent
+    /// <c>&lt;root&gt;/_Overrides/overrides.yaml</c> (ItemOverrides + VehicleOverrides for every mod).
+    /// The accumulated state is saved to a JSON sidecar, so items and vehicles — and multiple mods —
+    /// exported in separate passes or sessions keep adding up instead of overwriting each other.
     /// </summary>
     internal static class OverrideHintWriter
     {
         private sealed class ModData
         {
-            public List<ushort>? Items;
-            public List<ushort>? Vehicles;
+            public List<ushort>? Items { get; set; }
+            public List<ushort>? Vehicles { get; set; }
+            public ExportNamingMode NamingMode { get; set; }
         }
 
-        private static readonly Dictionary<uint, ModData> Mods = new();
+        private static Dictionary<uint, ModData> _mods = new();
+        private static string? _loadedDir;
 
-        /// <summary>Replaces the stored ID list for one category of a mod.</summary>
-        public static void SetCategory(uint modId, bool isVehicle, List<ushort> ids)
+        /// <summary>Merges one category of a mod into the accumulated state (in memory).</summary>
+        public static void Record(string root, uint modId, bool isVehicle, List<ushort> ids,
+            ExportNamingMode namingMode)
         {
-            if (!Mods.TryGetValue(modId, out var data))
+            Load(Path.Combine(root, "_Overrides"));
+
+            if (!_mods.TryGetValue(modId, out var data))
             {
                 data = new ModData();
-                Mods[modId] = data;
+                _mods[modId] = data;
             }
 
             if (isVehicle)
@@ -40,53 +46,102 @@ namespace UnturnedImages.Module.Images
             {
                 data.Items = ids;
             }
+
+            data.NamingMode = namingMode;
         }
 
-        /// <summary>Writes <c>&lt;root&gt;/_Overrides/&lt;modId&gt;.yaml</c> with everything known for the mod.</summary>
-        public static void Write(uint modId, string root, ExportNamingMode namingMode)
+        /// <summary>Persists the accumulated state and rewrites the single overrides.yaml from all of it.</summary>
+        public static void Flush(string root)
         {
-            if (!Mods.TryGetValue(modId, out var data))
+            try
+            {
+                var dir = Path.Combine(root, "_Overrides");
+                Load(dir);
+                Directory.CreateDirectory(dir);
+
+                File.WriteAllText(Path.Combine(dir, ".overrides.json"),
+                    JsonConvert.SerializeObject(_mods, Formatting.Indented));
+
+                var yamlPath = Path.Combine(dir, "overrides.yaml");
+                File.WriteAllText(yamlPath, BuildYaml());
+
+                UnturnedLog.info($"UnturnedImagesGenerator: updated {yamlPath}");
+            }
+            catch (Exception ex)
+            {
+                UnturnedLog.error("UnturnedImagesGenerator: could not write override hints: " + ex.Message);
+            }
+        }
+
+        private static void Load(string dir)
+        {
+            if (_loadedDir == dir)
             {
                 return;
             }
 
+            _loadedDir = dir;
+            _mods = new Dictionary<uint, ModData>();
+
+            try
+            {
+                var statePath = Path.Combine(dir, ".overrides.json");
+                if (File.Exists(statePath))
+                {
+                    _mods = JsonConvert.DeserializeObject<Dictionary<uint, ModData>>(File.ReadAllText(statePath))
+                            ?? new Dictionary<uint, ModData>();
+                }
+            }
+            catch
+            {
+                _mods = new Dictionary<uint, ModData>();
+            }
+        }
+
+        private static string BuildYaml()
+        {
             var sb = new StringBuilder();
-            sb.AppendLine($"# UnturnedImagesGenerator — ID ranges for workshop mod {modId}");
-            sb.AppendLine("# Paste the sections below into your UnturnedImages plugin config.");
-            sb.AppendLine("# Replace <YOUR_CDN_BASE> with where you host the images.");
+            sb.AppendLine("# UnturnedImagesGenerator — exported workshop ID ranges (all mods).");
+            sb.AppendLine("# Paste the sections into your plugin config. Replace <YOUR_CDN_BASE> with your host.");
             sb.AppendLine();
 
-            AppendSection(sb, "ItemOverrides", data.Items, ImageExportPaths.ItemsCategory, modId, namingMode, true);
-            AppendSection(sb, "VehicleOverrides", data.Vehicles, ImageExportPaths.VehiclesCategory, modId, namingMode,
-                false);
+            AppendSection(sb, "ItemOverrides", false, ImageExportPaths.ItemsCategory, "{ItemId}");
+            AppendSection(sb, "VehicleOverrides", true, ImageExportPaths.VehiclesCategory, "{VehicleId}");
 
-            var directory = Path.Combine(root, "_Overrides");
-            Directory.CreateDirectory(directory);
-            var path = Path.Combine(directory, modId + ".yaml");
-            File.WriteAllText(path, sb.ToString());
-
-            UnturnedLog.info($"UnturnedImagesGenerator: wrote override hints {path}");
+            return sb.ToString();
         }
 
-        private static void AppendSection(StringBuilder sb, string key, List<ushort>? ids, string categoryFolder,
-            uint modId, ExportNamingMode namingMode, bool item)
+        private static void AppendSection(StringBuilder sb, string key, bool vehicles, string categoryFolder,
+            string idToken)
         {
-            if (ids == null || ids.Count == 0)
+            var any = false;
+
+            foreach (var pair in _mods)
             {
-                return;
+                var ids = vehicles ? pair.Value.Vehicles : pair.Value.Items;
+                if (ids == null || ids.Count == 0)
+                {
+                    continue;
+                }
+
+                if (!any)
+                {
+                    sb.AppendLine($"{key}:");
+                    any = true;
+                }
+
+                var ranges = ImageUtils.GenerateIdRanges(new List<ushort>(ids));
+                var token = pair.Value.NamingMode == ExportNamingMode.GuidString ? "{Guid}" : idToken;
+                sb.AppendLine($"  # mod {pair.Key}");
+                sb.AppendLine($"  - Id: \"{ranges}\"");
+                sb.AppendLine(
+                    $"    Repository: \"<YOUR_CDN_BASE>/{categoryFolder}/{ImageExportPaths.WorkshopSegment}/{pair.Key}/{token}.png\"");
             }
 
-            var ranges = ImageUtils.GenerateIdRanges(new List<ushort>(ids));
-            var token = namingMode == ExportNamingMode.GuidString
-                ? "{Guid}"
-                : item
-                    ? "{ItemId}"
-                    : "{VehicleId}";
-
-            sb.AppendLine($"{key}:");
-            sb.AppendLine($"  - Id: \"{ranges}\"");
-            sb.AppendLine($"    Repository: \"<YOUR_CDN_BASE>/{categoryFolder}/{ImageExportPaths.WorkshopSegment}/{modId}/{token}.png\"");
-            sb.AppendLine();
+            if (any)
+            {
+                sb.AppendLine();
+            }
         }
     }
 }
