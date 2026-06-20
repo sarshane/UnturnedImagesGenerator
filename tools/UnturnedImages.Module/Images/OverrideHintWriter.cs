@@ -59,8 +59,32 @@ namespace UnturnedImages.Module.Images
                 Load(dir);
                 Directory.CreateDirectory(dir);
 
-                File.WriteAllText(Path.Combine(dir, ".overrides.json"),
-                    JsonConvert.SerializeObject(_mods, Formatting.Indented));
+                // Internal state used to keep accumulating across passes/sessions — hidden so only the
+                // human-readable overrides.yaml shows up in the folder. The Hidden attribute is cleared
+                // before writing (Windows rejects writing to a hidden file) and re-applied afterwards.
+                var statePath = Path.Combine(dir, ".overrides.json");
+                if (File.Exists(statePath))
+                {
+                    try
+                    {
+                        File.SetAttributes(statePath, File.GetAttributes(statePath) & ~FileAttributes.Hidden);
+                    }
+                    catch
+                    {
+                        // ignored
+                    }
+                }
+
+                File.WriteAllText(statePath, JsonConvert.SerializeObject(_mods, Formatting.Indented));
+
+                try
+                {
+                    File.SetAttributes(statePath, File.GetAttributes(statePath) | FileAttributes.Hidden);
+                }
+                catch
+                {
+                    // attribute is cosmetic only
+                }
 
                 var yamlPath = Path.Combine(dir, "overrides.yaml");
                 File.WriteAllText(yamlPath, BuildYaml());
