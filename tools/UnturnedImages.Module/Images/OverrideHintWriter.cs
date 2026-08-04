@@ -126,13 +126,100 @@ namespace UnturnedImages.Module.Images
         {
             var sb = new StringBuilder();
             sb.AppendLine("# UnturnedImagesGenerator — exported workshop ID ranges (all mods).");
-            sb.AppendLine("# Paste the sections into your plugin config. Replace <YOUR_CDN_BASE> with your host.");
+            sb.AppendLine("# Pick the block that matches your plugin and paste it in as is.");
             sb.AppendLine();
 
+            AppendMarketSection(sb);
+
+            sb.AppendLine("# ---------------------------------------------------------------------------");
+            sb.AppendLine("# UnturnedImages (the upstream CDN plugin) — its own config format.");
+            sb.AppendLine("# Replace <YOUR_CDN_BASE> with your host.");
+            sb.AppendLine("# ---------------------------------------------------------------------------");
             AppendSection(sb, "ItemOverrides", false, ImageExportPaths.ItemsCategory, "{ItemId}");
             AppendSection(sb, "VehicleOverrides", true, ImageExportPaths.VehiclesCategory, "{VehicleId}");
 
             return sb.ToString();
+        }
+
+        /// <summary>
+        /// Paste-ready block for SAR.Czarek.Market / SAR.Garage: one <c>WorkshopRanges</c> entry per
+        /// contiguous ID range, written with the indentation those configs use so it drops straight
+        /// under <c>Market: -&gt; Images:</c>. Both configs key items and vehicles off the same list,
+        /// so the two categories of a mod are merged here.
+        /// </summary>
+        private static void AppendMarketSection(StringBuilder sb)
+        {
+            var mods = new List<KeyValuePair<uint, List<ushort>>>();
+            var skipped = new List<uint>();
+
+            foreach (var pair in _mods)
+            {
+                // Those configs build their URLs from the numeric asset ID, so a mod exported with
+                // GUID file names cannot be addressed by them at all.
+                if (pair.Value.NamingMode == ExportNamingMode.GuidString)
+                {
+                    skipped.Add(pair.Key);
+
+                    continue;
+                }
+
+                var ids = new List<ushort>();
+
+                if (pair.Value.Items != null)
+                {
+                    ids.AddRange(pair.Value.Items);
+                }
+
+                if (pair.Value.Vehicles != null)
+                {
+                    ids.AddRange(pair.Value.Vehicles);
+                }
+
+                if (ids.Count == 0)
+                {
+                    continue;
+                }
+
+                mods.Add(new KeyValuePair<uint, List<ushort>>(pair.Key, ids));
+            }
+
+            if (mods.Count == 0 && skipped.Count == 0)
+            {
+                return;
+            }
+
+            mods.Sort((a, b) => a.Key.CompareTo(b.Key));
+            skipped.Sort();
+
+            sb.AppendLine("# ---------------------------------------------------------------------------");
+            sb.AppendLine("# SAR.Czarek.Market / SAR.Garage — paste under  Market:  ->  Images:");
+            sb.AppendLine("# The indentation below is already the one those configs expect.");
+            sb.AppendLine("# ---------------------------------------------------------------------------");
+
+            foreach (var modId in skipped)
+            {
+                sb.AppendLine($"# mod {modId} left out — exported with GUID file names, which these");
+                sb.AppendLine("# configs cannot address. Re-export it with 'Name: ID' to get it here.");
+            }
+
+            if (mods.Count > 0)
+            {
+                sb.AppendLine("    WorkshopRanges:");
+
+                foreach (var pair in mods)
+                {
+                    sb.AppendLine($"      # mod {pair.Key}");
+
+                    foreach (var range in ImageUtils.GenerateRanges(pair.Value))
+                    {
+                        sb.AppendLine($"      - WorkshopId: {pair.Key}");
+                        sb.AppendLine($"        LowestId: {range.Lowest}");
+                        sb.AppendLine($"        HighestId: {range.Highest}");
+                    }
+                }
+            }
+
+            sb.AppendLine();
         }
 
         private static void AppendSection(StringBuilder sb, string key, bool vehicles, string categoryFolder,

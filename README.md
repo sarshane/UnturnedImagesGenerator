@@ -29,7 +29,8 @@ exported.
 - Filters for official vs workshop assets, plus one-click export of a single workshop mod.
 - **Cancel** button to stop a running export.
 - Headless **console command** for scripted/batch export without the menu.
-- Maintains one paste-ready **`_Overrides/overrides.yaml`** with the exported ID ranges of every mod.
+- Maintains one paste-ready **`_Overrides/overrides.yaml`** with the exported ID ranges of every mod,
+  in both the **SAR.Czarek.Market / SAR.Garage** and the upstream **UnturnedImages** config format.
 
 ---
 
@@ -122,12 +123,36 @@ only available there:
 ### Workshop override hints
 
 Every workshop export updates a single **`_Overrides/overrides.yaml`** at the output root,
-collapsing the exported asset IDs into compact ranges (e.g. `1000-1050;1100`). It **accumulates** —
-items, vehicles and additional mods exported in separate passes or sessions keep adding to the same
-file (the state is kept in a `.overrides.json` sidecar), so nothing is overwritten:
+collapsing the exported asset IDs into contiguous ranges. It **accumulates** — items, vehicles and
+additional mods exported in separate passes or sessions keep adding to the same file (the state is
+kept in a `.overrides.json` sidecar), so nothing is overwritten.
+
+The file carries the same data in two config formats — copy whichever your plugin uses. To start
+fresh, delete the `_Overrides` folder.
+
+**SAR.Czarek.Market / SAR.Garage** — paste under `Market:` → `Images:`; the indentation is already
+the one those configs expect. Items and vehicles are merged, because a single `WorkshopRanges` list
+covers both there:
 
 ```yaml
-# UnturnedImagesGenerator — exported workshop ID ranges (all mods).
+    WorkshopRanges:
+      # mod 2376480123
+      - WorkshopId: 2376480123
+        LowestId: 30000
+        HighestId: 30042
+      - WorkshopId: 2376480123
+        LowestId: 30100
+        HighestId: 30100
+```
+
+A mod exported with **GUID** file names is left out of this block with a note — those configs build
+their URLs from the numeric asset ID and cannot address GUID-named files. Re-export it with
+`Name: ID` to get it in.
+
+**UnturnedImages** (the upstream CDN plugin) — replace `<YOUR_CDN_BASE>` with where you host the
+exported folder, then paste each section into the matching list:
+
+```yaml
 ItemOverrides:
   # mod 2376480123
   - Id: "30000-30042;30100"
@@ -137,9 +162,6 @@ VehicleOverrides:
   - Id: "31000-31008"
     Repository: "<YOUR_CDN_BASE>/Vehicles/Workshop/2376480123/{VehicleId}.png"
 ```
-
-Replace `<YOUR_CDN_BASE>` with where you host the exported folder, then paste each section into the
-matching list in your plugin. To start the file fresh, delete the `_Overrides` folder.
 
 ---
 
