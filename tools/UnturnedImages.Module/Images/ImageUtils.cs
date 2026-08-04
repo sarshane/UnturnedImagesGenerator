@@ -12,48 +12,83 @@ namespace UnturnedImages.Module.Images
 {
     public static class ImageUtils
     {
-        internal static string GenerateIdRanges(List<ushort> ids)
+        /// <summary>One contiguous, inclusive block of asset IDs.</summary>
+        internal readonly struct IdRange
         {
+            internal IdRange(ushort lowest, ushort highest)
+            {
+                Lowest = lowest;
+                Highest = highest;
+            }
+
+            internal ushort Lowest { get; }
+
+            internal ushort Highest { get; }
+        }
+
+        /// <summary>
+        /// Collapses a list of IDs into contiguous ranges. Duplicates are ignored; the input is sorted
+        /// in place.
+        /// </summary>
+        internal static List<IdRange> GenerateRanges(List<ushort> ids)
+        {
+            var ranges = new List<IdRange>();
+
+            if (ids == null || ids.Count == 0)
+            {
+                return ranges;
+            }
+
             ids.Sort();
 
-            var rangesBuilder = new StringBuilder();
+            var lowest = ids[0];
+            var highest = ids[0];
 
-            var startedRange = false;
-            int? prevId = null;
-
-            foreach (var id in ids)
+            for (var i = 1; i < ids.Count; i++)
             {
-                if (!prevId.HasValue)
+                var id = ids[i];
+
+                if (id == highest)
                 {
-                    rangesBuilder.Append(id);
-                    prevId = id;
+                    continue;
+                }
+
+                if (id == highest + 1)
+                {
+                    highest = id;
 
                     continue;
                 }
 
-                if (prevId.Value == id - 1)
-                {
-                    if (!startedRange)
-                    {
-                        rangesBuilder.Append('-');
-                        startedRange = true;
-                    }
-                }
-                else
-                {
-                    rangesBuilder.Append(prevId.Value);
-                    rangesBuilder.Append(';');
-                    rangesBuilder.Append(id);
-
-                    startedRange = false;
-                }
-
-                prevId = id;
+                ranges.Add(new IdRange(lowest, highest));
+                lowest = id;
+                highest = id;
             }
 
-            if (startedRange && prevId.HasValue)
+            ranges.Add(new IdRange(lowest, highest));
+
+            return ranges;
+        }
+
+        /// <summary>Same ranges as <see cref="GenerateRanges"/>, in the compact "1-3;7;9-11" notation.</summary>
+        internal static string GenerateIdRanges(List<ushort> ids)
+        {
+            var rangesBuilder = new StringBuilder();
+
+            foreach (var range in GenerateRanges(ids))
             {
-                rangesBuilder.Append(prevId.Value);
+                if (rangesBuilder.Length > 0)
+                {
+                    rangesBuilder.Append(';');
+                }
+
+                rangesBuilder.Append(range.Lowest);
+
+                if (range.Highest != range.Lowest)
+                {
+                    rangesBuilder.Append('-');
+                    rangesBuilder.Append(range.Highest);
+                }
             }
 
             return rangesBuilder.ToString();
