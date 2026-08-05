@@ -34,6 +34,18 @@
 	  <ProjectReference Include="..\UnturnedImages.Module.Bootstrapper\UnturnedImages.Module.Bootstrapper.csproj" />
 	</ItemGroup>
 
+	<!-- DanielWillett.UnturnedUITools carries a copy of SDG.Glazier.Runtime inside its own lib
+	     folder, so it gets copied next to the module. That one belongs to the game, which already
+	     has it loaded; shipping a second copy into the Modules folder only risks the two being
+	     loaded side by side. Compile-time resolution is untouched - this drops it from the output
+	     only, which is what the working releases look like. -->
+	<Target Name="DropGameAssembliesFromOutput" AfterTargets="ResolveAssemblyReferences">
+	  <ItemGroup>
+	    <ReferenceCopyLocalPaths Remove="@(ReferenceCopyLocalPaths)"
+	                             Condition="'%(Filename)' == 'SDG.Glazier.Runtime'" />
+	  </ItemGroup>
+	</Target>
+
 	<ItemGroup>
 	  <None Update="UnturnedImages.module">
 	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>

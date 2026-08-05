@@ -87,11 +87,32 @@ jobs:
 
     - name: Verify the archive
       run: |
-        for file in UnturnedImages.module UnturnedImages.Module.dll UnturnedImages.Module.Bootstrapper.dll 0Harmony.dll; do
-          unzip -l UnturnedImages.zip | grep -q "UnturnedImages/$file" \
-            || { echo "::error::$file missing from the archive."; exit 1; }
-        done
-        unzip -l UnturnedImages.zip
+        # Exact set on purpose. Something missing means a broken module; something extra has meant a
+        # game assembly leaking out of a package and shipping next to the copy the game already has.
+        # Adding a real dependency should be a conscious edit here.
+        cat > expected.txt <<'EOF'
+        0Harmony.dll
+        dnlib.dll
+        Microsoft.Extensions.DependencyInjection.Abstractions.dll
+        Microsoft.Extensions.Logging.Abstractions.dll
+        ReflectionTools.Harmony.dll
+        ReflectionTools.dll
+        UnturnedImages.Module.Bootstrapper.dll
+        UnturnedImages.Module.dll
+        UnturnedImages.module
+        UnturnedUITools.dll
+        EOF
+        sed -i 's/^[[:space:]]*//' expected.txt
+        sort -o expected.txt expected.txt
+
+        unzip -Z1 UnturnedImages.zip | sed -n 's#^UnturnedImages/##p' | grep . | sort > actual.txt
+
+        if ! diff -u expected.txt actual.txt; then
+          echo "::error::Archive contents do not match the expected file set."
+          exit 1
+        fi
+        echo "Archive contents match:"
+        cat actual.txt
       shell: bash
 
     - name: Create release
