@@ -14,7 +14,7 @@
 	</PropertyGroup>
 
 	<ItemGroup>
-	  <PackageReference Include="Lib.Harmony" Version="2.3.3" />
+	  <PackageReference Include="Lib.Harmony" Version="2.3.3" GeneratePathProperty="true" />
 	  <!-- The game ships 13.0.3 in Unturned_Data/Managed and loads it itself, so this is
 	       compile-only: taken from the package instead of a local Steam path, or the project
 	       would not build anywhere the game is not installed. -->
@@ -37,6 +37,13 @@
 	<ItemGroup>
 	  <None Update="UnturnedImages.module">
 	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </None>
+	  <!-- Unturned does not ship Harmony and Lib.Harmony has no netstandard lib folder, so nothing
+	       lands in the output on its own and the module would fail to load its patches. Copy the
+	       net472 build explicitly - that is the one the working releases carry. -->
+	  <None Include="$(PkgLib_Harmony)\lib\net472\0Harmony.dll">
+	    <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+	    <Visible>false</Visible>
 	  </None>
 	</ItemGroup>
 
