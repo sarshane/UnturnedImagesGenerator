@@ -15,6 +15,12 @@
 
 	<ItemGroup>
 	  <PackageReference Include="Lib.Harmony" Version="2.3.3" />
+	  <!-- The game ships 13.0.3 in Unturned_Data/Managed and loads it itself, so this is
+	       compile-only: taken from the package instead of a local Steam path, or the project
+	       would not build anywhere the game is not installed. -->
+	  <PackageReference Include="Newtonsoft.Json" Version="13.0.3">
+	    <IncludeAssets>compile</IncludeAssets>
+	  </PackageReference>
 	  <PackageReference Include="DanielWillett.UnturnedUITools" Version="1.4.6" />
 	  <PackageReference Include="OpenMod.UnityEngine.Redist" Version="2019.4.10">
 	    <IncludeAssets>compile</IncludeAssets>
@@ -52,9 +58,6 @@
 	  </Reference>
 	  <Reference Include="Mono.Security">
 	    <HintPath>..\..\..\..\..\..\..\Program Files (x86)\Steam\steamapps\common\U3DS\Unturned_Data\Managed\Mono.Security.dll</HintPath>
-	  </Reference>
-	  <Reference Include="Newtonsoft.Json">
-	    <HintPath>..\..\..\..\..\..\..\Program Files (x86)\Steam\steamapps\common\U3DS\Unturned_Data\Managed\Newtonsoft.Json.dll</HintPath>
 	  </Reference>
 	  <Reference Include="Pathfinding.Ionic.Zip.Reduced">
 	    <HintPath>..\..\..\..\..\..\..\Program Files (x86)\Steam\steamapps\common\U3DS\Unturned_Data\Managed\Pathfinding.Ionic.Zip.Reduced.dll</HintPath>
