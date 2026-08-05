@@ -1,11 +1,22 @@
 name: Unturned Images Module Release
 
+# The game assemblies are referenced twice on purpose: raw <Reference> items with local Steam
+# HintPaths (so the project opens in an IDE on a machine that has U3DS) and the OpenMod redist
+# packages. On a runner the HintPaths simply do not resolve — that is a warning, not an error, and
+# the redist packages supply the same assemblies for compilation. Which is why the zip below ends
+# up holding only the module and its own dependencies, with no game DLLs.
+
 on:
   workflow_dispatch:
     inputs:
       version:
-        description: 'Module Version (SemVer: https://semver.org)'
+        description: 'Module version, e.g. 1.0.2 (a leading v is accepted)'
         required: true
+      draft:
+        description: 'Create the release as a draft instead of publishing it'
+        type: boolean
+        required: false
+        default: false
 
 permissions:
   contents: write
@@ -18,6 +29,23 @@ jobs:
     - name: Checkout Repository
       uses: actions/checkout@v4
 
+    - name: Resolve version
+      id: version
+      run: |
+        raw="${{ github.event.inputs.version }}"
+        version="${raw#v}"
+        if [[ ! "$version" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+          echo "::error::'$raw' is not a MAJOR.MINOR.PATCH version."
+          exit 1
+        fi
+        if git ls-remote --exit-code --tags origin "refs/tags/v$version" >/dev/null 2>&1; then
+          echo "::error::Tag v$version already exists."
+          exit 1
+        fi
+        echo "version=$version" >> "$GITHUB_OUTPUT"
+        echo "tag=v$version" >> "$GITHUB_OUTPUT"
+      shell: bash
+
     - name: Setup .NET
       uses: actions/setup-dotnet@v4
       with:
@@ -29,29 +57,60 @@ jobs:
     - name: Install dependencies
       run: dotnet restore tools/UnturnedImages.Module/UnturnedImages.Module.csproj
 
-    - name: Update version
+    - name: Stamp version
       run: |
-        sed -i "s#<Version>0.0.0</Version>#<Version>${{ github.event.inputs.version }}</Version>#" tools/UnturnedImages.Module/UnturnedImages.Module.csproj
-        sed -i "s#\"Version\": \"0.0.0.0\"#\"Version\": \"${{ github.event.inputs.version }}\"#" tools/UnturnedImages.Module/UnturnedImages.module
+        version="${{ steps.version.outputs.version }}"
+        csproj=tools/UnturnedImages.Module/UnturnedImages.Module.csproj
+        module=tools/UnturnedImages.Module/UnturnedImages.module
+
+        # The .module Version is a four-part string; the placeholders must still be there, otherwise
+        # the release would silently ship as 0.0.0.
+        sed -i "s#<Version>0.0.0</Version>#<Version>$version</Version>#" "$csproj"
+        sed -i "s#\"Version\": \"0.0.0.0\"#\"Version\": \"$version.0\"#" "$module"
+
+        grep -q "<Version>$version</Version>" "$csproj" || { echo "::error::csproj version placeholder not found."; exit 1; }
+        grep -q "\"Version\": \"$version.0\"" "$module" || { echo "::error::.module version placeholder not found."; exit 1; }
+      shell: bash
 
     - name: Build
       run: dotnet build ./tools/UnturnedImages.Module/UnturnedImages.Module.csproj --configuration Release --no-restore
 
     - name: Zip release
       run: |
-        cd "./tools/UnturnedImages.Module/bin/Release/netstandard2.1"
+        cd ./tools/UnturnedImages.Module/bin/Release/netstandard2.1
         mkdir UnturnedImages
         mv *.dll UnturnedImages
         mv *.module UnturnedImages
-        zip -qr ../../../../../Release.zip UnturnedImages/
-        cd ../../../../../
+        # The asset name is what the README tells people to download — keep the two in step.
+        zip -qr "$GITHUB_WORKSPACE/UnturnedImages.zip" UnturnedImages/
+      shell: bash
+
+    - name: Verify the archive
+      run: |
+        for file in UnturnedImages.module UnturnedImages.Module.dll UnturnedImages.Module.Bootstrapper.dll 0Harmony.dll; do
+          unzip -l UnturnedImages.zip | grep -q "UnturnedImages/$file" \
+            || { echo "::error::$file missing from the archive."; exit 1; }
+        done
+        unzip -l UnturnedImages.zip
       shell: bash
 
     - name: Create release
       uses: softprops/action-gh-release@v2
       with:
-        tag_name: ${{ github.event.inputs.version }}
-        name: "UnturnedImages.Module v${{ github.event.inputs.version }}"
-        draft: true
+        tag_name: ${{ steps.version.outputs.tag }}
+        name: "Unturned Images Generator ${{ steps.version.outputs.tag }}"
+        draft: ${{ inputs.draft }}
         prerelease: false
-        files: ./Release.zip
+        make_latest: true
+        generate_release_notes: true
+        body: |
+          In-game Unturned **client** module that renders transparent PNG icons of items and vehicles, with a live **F10** editor.
+
+          ## Install
+          1. Download **`UnturnedImages.zip`** below.
+          2. Extract it into your Unturned `Modules` folder, so you get:
+             `…/steamapps/common/Unturned/Modules/UnturnedImages/UnturnedImages.module`
+          3. Launch Unturned **without BattlEye** and press **F10**.
+
+          See the [README](https://github.com/sarshane/UnturnedImagesGenerator#readme) for the full menu guide.
+        files: ./UnturnedImages.zip
